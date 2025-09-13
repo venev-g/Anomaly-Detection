@@ -205,3 +205,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+./anomaly/data/kddcup.data.corrected
+./anomaly/data/preprocessed_data_full.pkl
+./data/kddcup.data.corrected
