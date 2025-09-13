@@ -19,10 +19,10 @@ zenml model-deployer register mlflow_deployer --flavor=mlflow
 zenml stack register anomaly_detection_stack -e mlflow_tracker -d mlflow_deployer -a default -o default --set
 
 # 4. Run training pipeline
-python run_pipeline.py --config config.yaml
+python run_pipeline.py --config-path config.yaml
 
 # 5. Deploy models
-python run_deployment.py --config config.yaml
+python run_deployment.py 
 
 # 6. Test predictions
 python sample_predict.py --config config.yaml
