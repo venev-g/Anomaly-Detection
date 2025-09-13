@@ -1,3 +1,7 @@
+# Large files
+kddcup.data.corrected
+preprocessed_data_full.pkl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
