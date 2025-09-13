@@ -1,6 +1,7 @@
 # Large files
 kddcup.data.corrected
 preprocessed_data_full.pkl
+.zen
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
