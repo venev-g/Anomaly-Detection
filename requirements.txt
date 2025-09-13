@@ -1,0 +1,13 @@
+click
+matplotlib
+mlflow
+mlflow_skinny
+numpy
+pandas
+scikit_learn
+seaborn
+statsmodels
+zenml
+xgboost
+plotly
+pyyaml
