@@ -1,0 +1,3 @@
+./anomaly/data/kddcup.data.corrected
+./anomaly/data/preprocessed_data_full.pkl
+./data/kddcup.data.corrected
