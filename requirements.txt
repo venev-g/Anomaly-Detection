@@ -11,3 +11,4 @@ zenml
 xgboost
 plotly
 pyyaml
+ipykernel
