@@ -1,46 +1,40 @@
 import logging
 from zenml import pipeline
 from zenml.integrations.mlflow.steps import mlflow_model_deployer_step
-from pipelines.training_pipeline import anomaly_detection_training_pipeline
+from steps.latest_model_loader import latest_model_loader, model_to_mlflow_format
 from steps.dynamic_importer import dynamic_importer
 from steps.prediction_service_loader import prediction_service_loader
 from steps.predictor import predictor
-from steps.model_extractor import extract_binary_model
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-@pipeline(enable_cache=False)
-def continuous_deployment_pipeline():
+@pipeline
+def deployment_pipeline():
     """
-    Continuous deployment pipeline for anomaly detection.
+    Deployment pipeline that loads the latest trained model and deploys it.
     
     This pipeline:
-    1. Runs the training pipeline to get trained models
-    2. Deploys the binary classification model using MLflow
+    1. Loads the latest trained binary model from ZenML artifacts
+    2. Deploys it using MLflow model deployer
     """
-    logging.info("Starting continuous deployment pipeline")
+    logging.info("Starting deployment pipeline")
     
-    # Run the training pipeline to get trained models
-    (
-        binary_model_and_info, 
-        multiclass_model_and_info, 
-        binary_evaluation_results, 
-        multiclass_evaluation_results
-    ) = anomaly_detection_training_pipeline()
+    # Load the latest trained model
+    latest_model_and_info = latest_model_loader()
     
-    # Extract the binary model from the tuple
-    binary_model = extract_binary_model(binary_model_and_info)
+    # Extract just the model for MLflow deployment
+    mlflow_model = model_to_mlflow_format(latest_model_and_info)
     
     # Deploy the model using MLflow
     mlflow_model_deployer_step(
         workers=3,
         deploy_decision=True,
-        model=binary_model,
+        model=mlflow_model,
     )
     
-    logging.info("Continuous deployment pipeline completed")
+    logging.info("Deployment pipeline completed")
 
 
 @pipeline(enable_cache=False)
@@ -79,8 +73,8 @@ if __name__ == "__main__":
     # Example of running the deployment pipeline
     logging.info("Running deployment pipeline example")
     
-    # Run continuous deployment
-    continuous_deployment_pipeline()
+    # Run deployment
+    deployment_pipeline()
     
     # Run inference
     inference_results = inference_pipeline()

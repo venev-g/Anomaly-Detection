@@ -146,9 +146,25 @@ class BinaryModelEvaluationStrategy(ModelEvaluationStrategy):
                 columns=['feature', 'importance']
             ).sort_values('importance', ascending=False)
             
-            # Create plots
+            # Create and save plots
             cm_plot = self._plot_confusion_matrix(cm, ['Normal', 'Anomaly'])
             roc_plot = self._plot_roc_curve(y_test, y_pred_proba)
+            
+            # Save plots to temporary files and close figures
+            import tempfile
+            import os
+            
+            # Create temporary directory for plots
+            temp_dir = tempfile.mkdtemp()
+            cm_plot_path = os.path.join(temp_dir, "confusion_matrix.png")
+            roc_plot_path = os.path.join(temp_dir, "roc_curve.png")
+            
+            cm_plot.savefig(cm_plot_path, dpi=300, bbox_inches='tight')
+            roc_plot.savefig(roc_plot_path, dpi=300, bbox_inches='tight')
+            
+            # Close figures to free memory
+            plt.close(cm_plot)
+            plt.close(roc_plot)
             
             # Calculate additional metrics
             tn, fp, fn, tp = cm.ravel()
@@ -173,8 +189,8 @@ class BinaryModelEvaluationStrategy(ModelEvaluationStrategy):
                 'prediction_probabilities': y_pred_proba,
                 'threshold': threshold,
                 'plots': {
-                    'confusion_matrix': cm_plot,
-                    'roc_curve': roc_plot
+                    'confusion_matrix_path': cm_plot_path,
+                    'roc_curve_path': roc_plot_path
                 },
                 'summary': {
                     'total_samples': len(y_test),
@@ -281,7 +297,13 @@ class MulticlassModelEvaluationStrategy(ModelEvaluationStrategy):
             
             # Get class names
             class_names = label_encoder.classes_
-            report = classification_report(y_test, y_pred, target_names=class_names)
+            
+            # Get unique classes actually present in the test set
+            unique_classes = np.unique(np.concatenate([y_test, y_pred]))
+            present_class_names = [class_names[i] for i in unique_classes if i < len(class_names)]
+            
+            # Generate classification report with labels parameter to specify which classes to include
+            report = classification_report(y_test, y_pred, labels=unique_classes, target_names=present_class_names)
             
             # Get feature importance
             importance_dict = model.get_score(importance_type='gain')
@@ -290,8 +312,21 @@ class MulticlassModelEvaluationStrategy(ModelEvaluationStrategy):
                 columns=['feature', 'importance']
             ).sort_values('importance', ascending=False)
             
-            # Create confusion matrix plot
-            cm_plot = self._plot_confusion_matrix(cm, class_names)
+            # Create and save confusion matrix plot
+            cm_plot = self._plot_confusion_matrix(cm, present_class_names)
+            
+            # Save plot to temporary file and close figure
+            import tempfile
+            import os
+            
+            # Create temporary directory for plots
+            temp_dir = tempfile.mkdtemp()
+            cm_plot_path = os.path.join(temp_dir, "confusion_matrix.png")
+            
+            cm_plot.savefig(cm_plot_path, dpi=300, bbox_inches='tight')
+            
+            # Close figure to free memory
+            plt.close(cm_plot)
             
             # Calculate per-class metrics
             per_class_metrics = {}
@@ -322,13 +357,15 @@ class MulticlassModelEvaluationStrategy(ModelEvaluationStrategy):
                 'feature_importance': feature_importance,
                 'predictions': y_pred,
                 'prediction_probabilities': y_pred_proba,
-                'class_names': list(class_names),
+                'class_names': list(present_class_names),
+                'all_class_names': list(class_names),  # Keep original for reference
                 'plots': {
-                    'confusion_matrix': cm_plot
+                    'confusion_matrix_path': cm_plot_path
                 },
                 'summary': {
                     'total_samples': len(y_test),
-                    'num_classes': len(class_names),
+                    'num_classes': len(present_class_names),
+                    'total_possible_classes': len(class_names),
                     'correctly_classified': int(np.sum(y_pred == y_test)),
                     'misclassified': int(np.sum(y_pred != y_test))
                 }

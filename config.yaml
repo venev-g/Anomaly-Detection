@@ -87,7 +87,8 @@ xgboost:
     subsample: 1
     reg_lambda: 1
     scale_pos_weight: 2
-    tree_method: "gpu_hist"
+    tree_method: "hist"
+    device: "cuda"
     n_gpus: 1
     objective: "binary:logistic"
     verbose: True
@@ -102,7 +103,8 @@ xgboost:
     learning_rate: 0.1
     subsample: 1
     reg_lambda: 1
-    tree_method: "gpu_hist"
+    tree_method: "hist"
+    device: "cuda"
     n_gpus: 1
     objective: "multi:softprob"
     verbose: True
@@ -120,5 +122,5 @@ evaluation:
 # Deployment configuration
 deployment:
   model_name: "anomaly_detector"
-  service_workers: 3
+  service_workers: 4
   prediction_threshold: 0.5

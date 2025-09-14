@@ -8,7 +8,7 @@ from src.model_builder import ModelBuilderFactory
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-@step
+@step(experiment_tracker="mlflow_tracker")
 def binary_model_building_step(
     preprocessed_data: Dict[str, Any],
     config_path: str = "config.yaml"
@@ -50,7 +50,7 @@ def binary_model_building_step(
         raise
 
 
-@step
+@step(experiment_tracker="mlflow_tracker")
 def multiclass_model_building_step(
     preprocessed_data: Dict[str, Any],
     config_path: str = "config.yaml"
