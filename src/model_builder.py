@@ -114,30 +114,35 @@ class BinaryXGBoostStrategy(ModelBuildingStrategy):
                 verbose_eval=xgb_config.get('verbose', True)
             )
             
-            # Log model and metrics to MLflow
-            logging.info("Logging model to MLflow...")
+            # Log model and metrics to MLflow (using the already active run)
+            logging.info("Logging binary model to MLflow...")
             
-            # Get predictions for signature inference
-            train_predictions = model.predict(dtrain)
-            signature = infer_signature(X_train, train_predictions)
-            
-            # Log parameters, metrics, and model to MLflow
-            mlflow.log_params(params)
-            mlflow.log_param("num_rounds", num_rounds)
-            mlflow.log_param("num_features", X_train.shape[1])
-            mlflow.log_param("train_samples", X_train.shape[0])
-            mlflow.log_param("test_samples", X_test.shape[0])
-            
-            # Log the XGBoost model
-            mlflow.xgboost.log_model(
-                xgb_model=model,
-                artifact_path="model",
-                signature=signature,
-                input_example=X_train.head(5),
-                registered_model_name="binary_anomaly_detection_model"
-            )
-            
-            logging.info("Model successfully logged to MLflow")
+            try:
+                # Get predictions for signature inference
+                train_predictions = model.predict(dtrain)
+                signature = infer_signature(X_train, train_predictions)
+                
+                # Log parameters with binary prefix to avoid conflicts
+                binary_params = {f"binary_{k}": v for k, v in params.items()}
+                mlflow.log_params(binary_params)
+                mlflow.log_param("binary_num_rounds", num_rounds)
+                mlflow.log_param("binary_num_features", X_train.shape[1])
+                mlflow.log_param("binary_train_samples", X_train.shape[0])
+                mlflow.log_param("binary_test_samples", X_test.shape[0])
+                
+                # Log the XGBoost model
+                mlflow.xgboost.log_model(
+                    xgb_model=model,
+                    artifact_path="binary_model",
+                    signature=signature,
+                    input_example=X_train.head(5),
+                    registered_model_name="binary_anomaly_detection_model"
+                )
+                
+                logging.info("Binary model successfully logged to MLflow")
+            except Exception as e:
+                logging.warning(f"Failed to log binary model to MLflow: {str(e)}")
+                # Continue execution even if MLflow logging fails
             
             # Prepare training info
             training_info = {
@@ -242,31 +247,36 @@ class MulticlassXGBoostStrategy(ModelBuildingStrategy):
                 verbose_eval=xgb_config.get('verbose', True)
             )
             
-            # Log model and metrics to MLflow
-            logging.info("Logging model to MLflow...")
+            # Log model and metrics to MLflow (using the already active run)
+            logging.info("Logging multiclass model to MLflow...")
             
-            # Get predictions for signature inference
-            train_predictions = model.predict(dtrain)
-            signature = infer_signature(X_train, train_predictions)
-            
-            # Log parameters, metrics, and model to MLflow
-            mlflow.log_params(params)
-            mlflow.log_param("num_rounds", num_rounds)
-            mlflow.log_param("num_classes", num_classes)
-            mlflow.log_param("num_features", X_train.shape[1])
-            mlflow.log_param("train_samples", X_train.shape[0])
-            mlflow.log_param("test_samples", X_test.shape[0])
-            
-            # Log the XGBoost model
-            mlflow.xgboost.log_model(
-                xgb_model=model,
-                artifact_path="model",
-                signature=signature,
-                input_example=X_train.head(5),
-                registered_model_name="multiclass_attack_detection_model"
-            )
-            
-            logging.info("Model successfully logged to MLflow")
+            try:
+                # Get predictions for signature inference
+                train_predictions = model.predict(dtrain)
+                signature = infer_signature(X_train, train_predictions)
+                
+                # Log parameters with multiclass prefix to avoid conflicts
+                multiclass_params = {f"multiclass_{k}": v for k, v in params.items()}
+                mlflow.log_params(multiclass_params)
+                mlflow.log_param("multiclass_num_rounds", num_rounds)
+                mlflow.log_param("multiclass_num_classes", num_classes)
+                mlflow.log_param("multiclass_num_features", X_train.shape[1])
+                mlflow.log_param("multiclass_train_samples", X_train.shape[0])
+                mlflow.log_param("multiclass_test_samples", X_test.shape[0])
+                
+                # Log the XGBoost model
+                mlflow.xgboost.log_model(
+                    xgb_model=model,
+                    artifact_path="multiclass_model",
+                    signature=signature,
+                    input_example=X_train.head(5),
+                    registered_model_name="multiclass_attack_detection_model"
+                )
+                
+                logging.info("Multiclass model successfully logged to MLflow")
+            except Exception as e:
+                logging.warning(f"Failed to log multiclass model to MLflow: {str(e)}")
+                # Continue execution even if MLflow logging fails
             
             # Prepare training info
             training_info = {

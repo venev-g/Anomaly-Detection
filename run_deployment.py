@@ -104,7 +104,7 @@ def main(stop_service: bool):
             print("   The anomaly detection prediction server is running locally as a daemon")
             print("   process and accepts inference requests at:")
             print(f"   {service[0].prediction_url}")
-            print(f"   \n   Service Status: {service[0].get_status()}")
+            print(f"   \n   Service Status: {'Running' if service[0].is_running else 'Stopped'}")
             
             print("\n🔍 USAGE:")
             print("   • Send POST requests to the prediction URL with network traffic data")

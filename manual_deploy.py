@@ -54,7 +54,7 @@ def main():
         if existing_services:
             logging.info(f"Found {len(existing_services)} existing services")
             for service in existing_services:
-                logging.info(f"Service: {service.prediction_url}, Status: {service.get_status()}")
+                logging.info(f"Service: {service.prediction_url}, Status: {'Running' if service.is_running else 'Stopped'}")
                 return
         
         # Try to deploy using MLflow directly

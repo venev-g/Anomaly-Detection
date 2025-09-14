@@ -46,8 +46,28 @@ def prediction_service_loader(
         
         service = services[0]
         logging.info(f"Loaded prediction service: {service}")
-        logging.info(f"Service status: {service.get_status()}")
-        logging.info(f"Prediction URL: {service.prediction_url}")
+        
+        # Check service status using the correct attribute/method
+        try:
+            if hasattr(service, 'status'):
+                logging.info(f"Service status: {service.status}")
+            elif hasattr(service, 'is_running'):
+                logging.info(f"Service running: {service.is_running}")
+            else:
+                logging.info("Service status information not available")
+        except Exception as status_error:
+            logging.warning(f"Could not get service status: {status_error}")
+        
+        # Get prediction URL
+        try:
+            if hasattr(service, 'prediction_url'):
+                logging.info(f"Prediction URL: {service.prediction_url}")
+            elif hasattr(service, 'get_prediction_url'):
+                logging.info(f"Prediction URL: {service.get_prediction_url()}")
+            else:
+                logging.info("Prediction URL not available")
+        except Exception as url_error:
+            logging.warning(f"Could not get prediction URL: {url_error}")
         
         return service
         
