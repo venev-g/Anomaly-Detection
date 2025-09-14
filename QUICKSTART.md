@@ -15,17 +15,17 @@ pip install -r requirements.txt
 zenml init
 zenml integration install mlflow -y
 zenml experiment-tracker register mlflow_tracker --flavor=mlflow
-zenml model-deployer register mlflow_deployer --flavor=mlflow
-zenml stack register anomaly_detection_stack -e mlflow_tracker -d mlflow_deployer -a default -o default --set
+zenml model-deployer register mlflow_deployer_new --flavor=mlflow
+zenml stack register anomaly_detection_stack -e mlflow_tracker -d mlflow_deployer_new -a default -o default --set
 
 # 4. Run training pipeline
-python run_pipeline.py --config-path config.yaml
+python run_pipeline.py
 
-# 5. Deploy models
+# 5. Deploy models (includes training + deployment)
 python run_deployment.py 
 
-# 6. Test predictions
-python sample_predict.py --config config.yaml
+# 6. Test predictions (verify deployment works)
+python test_deployment.py
 ```
 
 ## 📖 Complete Guide
@@ -56,8 +56,9 @@ anomaly-detection-system/
 ├── 📦 requirements.txt         # Dependencies
 ├── 🚀 run_pipeline.py         # Training pipeline
 ├── 🔄 run_deployment.py       # Deployment pipeline
-├── 🧪 sample_predict.py       # Prediction testing
+├── 🧪 test_deployment_final.py # Deployment testing (fixed)
 ├── 📖 GETTING_STARTED.md      # Complete guide
+├── 📋 DEPLOYMENT_FIXES_SUMMARY.md # Recent fixes documentation
 ├── 📁 src/                    # Core modules
 ├── 📁 steps/                  # ZenML pipeline steps
 ├── 📁 pipelines/              # Training & deployment workflows
@@ -80,6 +81,14 @@ Expected performance on KDD99 dataset:
 - **Multiclass Classification**: ~92% Overall Accuracy
 - **Training Time**: 3-5x faster with GPU acceleration
 - **Inference**: <10ms per prediction
+
+## ✅ Recent Fixes (September 2024)
+
+All critical deployment pipeline errors have been resolved:
+- **✅ MLflow Integration**: Proper experiment tracking and model logging
+- **✅ Data Format**: Fixed 400 Bad Request errors with correct feature expansion
+- **✅ Service Deployment**: MLflow prediction services work correctly
+- **✅ End-to-End Pipeline**: Complete training and deployment without errors
 
 ## 🛠️ Requirements
 

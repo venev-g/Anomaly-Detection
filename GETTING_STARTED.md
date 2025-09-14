@@ -2,6 +2,15 @@
 
 This guide provides step-by-step instructions to set up, run, and deploy the KDD99 Anomaly Detection System from start to finish.
 
+## ✅ Recent Updates (September 2024)
+
+**All deployment pipeline errors have been fixed!** This version includes:
+- **✅ Fixed MLflow Integration**: Proper experiment tracking with `@step(experiment_tracker="mlflow_tracker")`
+- **✅ Fixed Data Format Issues**: Correct feature expansion from 41 to 122 features for MLflow serving
+- **✅ Fixed Service API**: Replaced `get_status()` with `is_running` attribute
+- **✅ Fixed Prediction Pipeline**: HTTP requests with proper `dataframe_split` format
+- **✅ Complete End-to-End**: Training + deployment + inference all working
+
 ## 📋 Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -82,12 +91,12 @@ zenml integration install mlflow -y
 zenml experiment-tracker register mlflow_tracker --flavor=mlflow
 
 # Register MLflow model deployer
-zenml model-deployer register mlflow_deployer --flavor=mlflow
+zenml model-deployer register mlflow_deployer_new --flavor=mlflow
 
 # Register and set a custom stack with MLflow components
 zenml stack register anomaly_detection_stack \
     -e mlflow_tracker \
-    -d mlflow_deployer \
+    -d mlflow_deployer_new \
     -a default \
     -o default \
     --set
@@ -196,7 +205,7 @@ nano config.yaml  # or use your preferred editor
 ### Step 2: Run Training Pipeline
 ```bash
 # Run the complete training pipeline
-python run_pipeline.py --config config.yaml
+python run_pipeline.py
 
 # This will:
 # 1. Ingest and preprocess the KDD99 data
@@ -283,14 +292,14 @@ print('📈 Check MLflow UI for detailed evaluation results')
 
 ### Step 1: Deploy Models
 ```bash
-# Run deployment pipeline
-python run_deployment.py --config config.yaml
+# Run deployment pipeline (includes training + deployment)
+python run_deployment.py
 
 # This will:
-# 1. Load the best trained models
+# 1. Train models with proper MLflow integration
 # 2. Deploy them as MLflow services
-# 3. Set up prediction endpoints
-# 4. Enable batch inference
+# 3. Set up prediction endpoints at http://127.0.0.1:8000/invocations
+# 4. Run batch inference with correct data formatting
 ```
 
 ### Step 2: Verify Deployment
@@ -335,13 +344,14 @@ except Exception as e:
 
 ### Step 1: Test Sample Predictions
 ```bash
-# Run sample prediction script
-python sample_predict.py --config config.yaml
+# Test the deployed model with proper data format
+python test_deployment_final.py
 
 # This will:
-# 1. Load sample data
-# 2. Make predictions using deployed models
-# 3. Show results for both binary and multiclass classification
+# 1. Load sample data with correct preprocessing
+# 2. Make predictions using deployed MLflow services
+# 3. Show results with proper feature expansion (41 → 122 features)
+# 4. Verify the deployment pipeline is working correctly
 ```
 
 ### Step 2: Interactive Prediction
@@ -471,12 +481,12 @@ zenml stack describe
 # If stack components are missing, re-register them
 zenml integration install mlflow -y
 zenml experiment-tracker register mlflow_tracker --flavor=mlflow
-zenml model-deployer register mlflow_deployer --flavor=mlflow
+zenml model-deployer register mlflow_deployer_new --flavor=mlflow
 
 # Update stack with correct components
 zenml stack update anomaly_detection_stack \
     -e mlflow_tracker \
-    -d mlflow_deployer
+    -d mlflow_deployer_new
 
 # Verify stack is active
 zenml stack set anomaly_detection_stack
@@ -567,8 +577,8 @@ cp config.yaml config_custom.yaml
 # Edit parameters
 nano config_custom.yaml
 
-# Run with custom config
-python run_pipeline.py --config config_custom.yaml
+# Run with custom config (config is loaded automatically)
+python run_pipeline.py
 ```
 
 ### Hyperparameter Tuning
@@ -636,6 +646,36 @@ if experiment:
 
 ---
 
+## 🧪 Testing the Deployment
+
+### Quick Deployment Test
+```bash
+# Test the deployed model with proper data formatting
+python test_deployment.py
+
+# Expected output:
+# ✅ Prediction SUCCESS!
+# Response: {'predictions': [0.28409284353256226]}
+# 🟢 Prediction: NORMAL connection
+# 🎉 Model deployment test PASSED!
+```
+
+### Alternative Test Scripts
+```bash
+# Updated main test script (recommended)
+python test_deployment.py
+
+# Alternative test scripts for different approaches
+python test_deployment_final.py    # Complete feature expansion
+python test_deployment_correct.py  # Corrected preprocessing  
+python test_deployment_fixed.py    # Basic deployment verification
+
+# All test scripts verify:
+# - MLflow service is running
+# - Data format matches model expectations (122 features)
+# - Predictions return valid results
+```
+
 ## ✅ Verification Checklist
 
 Run this checklist to verify everything is working:
@@ -681,6 +721,9 @@ def main():
         ('src/model_builder.py', 'Model builder'),
         ('run_pipeline.py', 'Training pipeline'),
         ('run_deployment.py', 'Deployment pipeline'),
+        ('test_deployment.py', 'Main deployment test script'),
+        ('test_deployment_final.py', 'Alternative deployment test'),
+        ('DEPLOYMENT_FIXES_SUMMARY.md', 'Fix documentation'),
     ]
     
     file_checks = [check_file(f, d) for f, d in files_to_check]
@@ -734,11 +777,12 @@ python verify_setup.py
 If you've completed all steps successfully, you now have:
 
 ✅ **Fully trained anomaly detection models**  
-✅ **Deployed prediction services**  
+✅ **Deployed prediction services on http://127.0.0.1:8000/invocations**  
 ✅ **Comprehensive evaluation metrics**  
-✅ **Production-ready inference pipeline**  
-✅ **MLflow experiment tracking**  
-✅ **ZenML pipeline orchestration**  
+✅ **Production-ready inference pipeline with proper data formatting**  
+✅ **MLflow experiment tracking with fixed integration**  
+✅ **ZenML pipeline orchestration without errors**  
+✅ **Working end-to-end deployment pipeline**  
 
 ### 📊 What's Next?
 
